@@ -91,4 +91,10 @@ std::vector<std::string> rucio_get_replicas_metalinks(const std::string& path);
 static std::unordered_map<std::string, off_t> file_size_cache;
 off_t rucio_get_size(const std::string& path);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DiD scope cache - maps server+name to actual scope
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static std::unordered_map<std::string, std::string> did_scope_cache;
+std::string get_cached_scope(const std::string& server_name, const std::string& did_name);
+
 #endif //RUCIO_FUSE_REST_API_H

@@ -300,7 +300,10 @@ std::vector<rucio_did> rucio_list_dids(const std::string& scope, const std::stri
     }
 
     for(const auto& did : dids){
-      is_container_cache[short_server_name+scope+did.name] = did.type != rucio_data_type::rucio_file;
+      // Cache DID properties using the actual scope from the DID
+      is_container_cache[short_server_name+did.scope+did.name] = did.type != rucio_data_type::rucio_file;
+      // Cache the scope for this DID name so we can look it up later
+      did_scope_cache[short_server_name+did.name] = did.scope;
     }
 
     dids_cache[key] = std::move(dids);
@@ -343,10 +346,13 @@ std::vector<rucio_did> rucio_list_container_dids(const std::string& scope, const
     }
 
     for(const auto& did : dids){
-      is_container_cache[short_server_name+scope+did.name] = did.type != rucio_data_type::rucio_file;
-      file_size_cache[short_server_name+scope+did.name] = did.size;
-      fastlog(DEBUG,"%s:%s:%s -> %s",short_server_name.data(), scope.data(), did.name.data(),
-              (is_container_cache[short_server_name+scope+did.name])?"true":"false");
+      // Cache DID properties using the actual scope from the DID
+      is_container_cache[short_server_name+did.scope+did.name] = did.type != rucio_data_type::rucio_file;
+      file_size_cache[short_server_name+did.scope+did.name] = did.size;
+      // Cache the scope for this DID name so we can look it up later
+      did_scope_cache[short_server_name+did.name] = did.scope;
+      fastlog(DEBUG,"%s:%s:%s -> %s",short_server_name.data(), did.scope.data(), did.name.data(),
+              (is_container_cache[short_server_name+did.scope+did.name])?"true":"false");
     }
 
     container_dids_cache[key] = std::move(dids);
@@ -364,8 +370,12 @@ bool rucio_is_container(const rucio_did& did){
 bool rucio_is_container(const std::string& path){
   auto short_server_name = extract_server_name(path);
   auto conn_params = get_server_params(short_server_name);
-  auto scope = extract_scope(path);
   auto name = extract_name(path);
+
+  // Try to get the actual scope from cache first
+  auto cached_scope = get_cached_scope(short_server_name, name);
+  auto scope = cached_scope.empty() ? extract_scope(path) : cached_scope;
+
   auto found = is_container_cache.find(short_server_name+scope+name);
 
   if(found == is_container_cache.end()) {
@@ -401,8 +411,12 @@ bool rucio_is_container(const std::string& path){
 bool rucio_is_file(const std::string& path){
   auto short_server_name = extract_server_name(path);
   auto conn_params = get_server_params(short_server_name);
-  auto scope = extract_scope(path);
   auto name = extract_name(path);
+
+  // Try to get the actual scope from cache first
+  auto cached_scope = get_cached_scope(short_server_name, name);
+  auto scope = cached_scope.empty() ? extract_scope(path) : cached_scope;
+
   auto found = is_file_cache.find(short_server_name+scope+name);
 
   if(found == is_container_cache.end()) {
@@ -436,8 +450,12 @@ bool rucio_is_file(const std::string& path){
 
 off_t rucio_get_size(const std::string& path){
   auto short_server_name = extract_server_name(path);
-  auto scope = extract_scope(path);
   auto name = extract_name(path);
+
+  // Try to get the actual scope from cache first
+  auto cached_scope = get_cached_scope(short_server_name, name);
+  auto scope = cached_scope.empty() ? extract_scope(path) : cached_scope;
+
   auto key = short_server_name+scope+name;
 
   auto cache_found = file_size_cache.find(key);
@@ -541,5 +559,14 @@ std::vector<std::string> rucio_get_replicas_metalinks(const std::string& path){
   }
 
   return std::move(pfns);
+}
+
+std::string get_cached_scope(const std::string& server_name, const std::string& did_name){
+  auto found = did_scope_cache.find(server_name+did_name);
+  if(found != did_scope_cache.end()){
+    return found->second;
+  }
+  // If not found in cache, return empty string
+  return "";
 }
 

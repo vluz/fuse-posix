@@ -9,6 +9,7 @@ Authors:
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <utils.h>
+#include <REST-API.h>
 #include <string>
 #include <string.h>
 #include <stdlib.h>
@@ -173,7 +174,19 @@ bool is_mac_specific(const std::string &path){
 }
 
 std::string get_did(const std::string& path){
-  return extract_scope(path)+":"+extract_name(path);
+  auto server_name = extract_server_name(path);
+  auto did_name = extract_name(path);
+
+  // Try to get the actual scope from cache first (for files in containers)
+  auto cached_scope = get_cached_scope(server_name, did_name);
+
+  if (!cached_scope.empty()) {
+    // Use the cached scope (actual scope from Rucio)
+    return cached_scope + ":" + did_name;
+  } else {
+    // Fall back to extracting scope from path (for top-level DIDs)
+    return extract_scope(path) + ":" + did_name;
+  }
 }
 
 void split_dids(const std::string &line, std::vector<std::string>& did_strings){
