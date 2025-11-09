@@ -9,16 +9,16 @@ Root Cause: The Rucio API's /scopes/ endpoint changed from returning a Python
 ### Files Modified:
 
 include/utils.h:164-167
-- Added parse_scope_json() function declaration
+  - Added parse_scope_json() function declaration
 
 source/utils.cpp:290-354
-- Implemented parse_scope_json() to parse JSON objects and extract scope values
-- Handles both {"scope": "value"} and {scope: value} formats
+  - Implemented parse_scope_json() to parse JSON objects and extract scope values
+  - Handles both {"scope": "value"} and {scope: value} formats
 
 source/REST-API.cpp:228-245
-- Modified rucio_list_scopes() to merge all response lines
-- Added auto-detection of JSON object vs Python list format
-- Calls appropriate parser based on format
+  - Modified rucio_list_scopes() to merge all response lines
+  - Added auto-detection of JSON object vs Python list format
+  - Calls appropriate parser based on format
 
 ## Problem 2: Incorrect DID Construction for Nested Files
 
@@ -29,33 +29,33 @@ Root Cause: The code assumed all files in a path use the top-level scope from t
 ### Files Modified:
 
 include/utils.h:177-182
-- Added did_scope_cache static map
-- Added cache_did_scope() function to store scope mappings
-- Added get_cached_scope() function to retrieve cached scopes
+  - Added did_scope_cache static map
+  - Added cache_did_scope() function to store scope mappings
+  - Added get_cached_scope() function to retrieve cached scopes
 
 source/utils.cpp:368-379
-- Implemented cache_did_scope() and get_cached_scope() functions
+  - Implemented cache_did_scope() and get_cached_scope() functions
 
 source/utils.cpp:175-189
-- Modified get_did() to check cache for actual scope first
-- Falls back to path-based scope extraction if not cached
+  - Modified get_did() to check cache for actual scope first
+  - Falls back to path-based scope extraction if not cached
 
 source/REST-API.cpp:287-292
-- Updated rucio_list_dids() to cache actual DID scopes
-- Fixed cache keys to use did.scope instead of parent scope
+  - Updated rucio_list_dids() to cache actual DID scopes
+  - Fixed cache keys to use did.scope instead of parent scope
 
 source/REST-API.cpp:330-338
-- Updated rucio_list_container_dids() to cache actual DID scopes
-- Fixed cache keys to use did.scope instead of parent scope
+  - Updated rucio_list_container_dids() to cache actual DID scopes
+  - Fixed cache keys to use did.scope instead of parent scope
 
 source/REST-API.cpp:349-357
-- Updated rucio_is_container() to use cached scope
+  - Updated rucio_is_container() to use cached scope
 
 source/REST-API.cpp:386-394
-- Updated rucio_is_file() to use cached scope
+  - Updated rucio_is_file() to use cached scope
 
 source/REST-API.cpp:422-429
-- Updated rucio_get_size() to use cached scope
+  - Updated rucio_get_size() to use cached scope
 
 ## Problem 3: Downloading Flag Not Cleared on Failure
 
@@ -66,18 +66,18 @@ Root Cause: The downloading flag was only cleared on successful cache hits, nev
 ### Files Modified:
 
 include/rucio-download.h:86
-Added fpath field to rucio_download_info struct to store original path
+  - Added fpath field to rucio_download_info struct to store original path
 
 include/rucio-download.h:94
-Modified constructor to initialize fpath field
+  - Modified constructor to initialize fpath field
 
 include/download-pipeline.h:72-77
-Updated rucio_notifier::process_input() to call set_downloaded() for both success and failure
-Clears downloading flag after any download completion
+  - Updated rucio_notifier::process_input() to call set_downloaded() for both success and failure
+  - Clears downloading flag after any download completion
 
 ---
 
-All my changes are Public Domain or CC0.
+All my changes are Public Domain or CC0 do as you see fit with them.
 
 **Please note the original code License is:**
 
