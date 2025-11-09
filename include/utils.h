@@ -174,4 +174,11 @@ void set_downloading(const std::string& path);
 bool is_downloading(const std::string& path);
 void set_downloaded(const std::string& path);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DiD scope cache - maps server+name to actual scope
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static std::unordered_map<std::string, std::string> did_scope_cache;
+void cache_did_scope(const std::string& server_name, const std::string& did_name, const std::string& scope);
+std::string get_cached_scope(const std::string& server_name, const std::string& did_name);
+
 #endif //RUCIO_FUSE_UTILS_H

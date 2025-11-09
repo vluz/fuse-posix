@@ -9,7 +9,6 @@ Authors:
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <utils.h>
-#include <REST-API.h>
 #include <string>
 #include <string.h>
 #include <stdlib.h>
@@ -376,4 +375,17 @@ bool is_downloading(const std::string& path){
 
 void set_downloaded(const std::string& path){
   downloading_status_cache.erase(path);
+}
+
+void cache_did_scope(const std::string& server_name, const std::string& did_name, const std::string& scope){
+  did_scope_cache[server_name+did_name] = scope;
+}
+
+std::string get_cached_scope(const std::string& server_name, const std::string& did_name){
+  auto found = did_scope_cache.find(server_name+did_name);
+  if(found != did_scope_cache.end()){
+    return found->second;
+  }
+  // If not found in cache, return empty string
+  return "";
 }
