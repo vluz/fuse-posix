@@ -111,6 +111,10 @@ Authors:
 
 Original code link: https://github.com/rucio/fuse-posix
 
+TODO: Add instructions on how configure and use properly once I figure them out.
+
+---
+
 ---
 
 Original README.md:
