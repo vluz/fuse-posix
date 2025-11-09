@@ -11,9 +11,13 @@ Root Cause: The Rucio API's /scopes/ endpoint changed from returning a Python
 include/utils.h:164-167
   - Added parse_scope_json() function declaration
 
+<BR>
+
 source/utils.cpp:290-354
   - Implemented parse_scope_json() to parse JSON objects and extract scope values
   - Handles both {"scope": "value"} and {scope: value} formats
+
+<BR>
 
 source/REST-API.cpp:228-245
   - Modified rucio_list_scopes() to merge all response lines
@@ -33,26 +37,40 @@ include/utils.h:177-182
   - Added cache_did_scope() function to store scope mappings
   - Added get_cached_scope() function to retrieve cached scopes
 
+<BR>
+
 source/utils.cpp:368-379
   - Implemented cache_did_scope() and get_cached_scope() functions
+
+<BR>
 
 source/utils.cpp:175-189
   - Modified get_did() to check cache for actual scope first
   - Falls back to path-based scope extraction if not cached
 
+<BR>
+
 source/REST-API.cpp:287-292
   - Updated rucio_list_dids() to cache actual DID scopes
   - Fixed cache keys to use did.scope instead of parent scope
+
+<BR>
 
 source/REST-API.cpp:330-338
   - Updated rucio_list_container_dids() to cache actual DID scopes
   - Fixed cache keys to use did.scope instead of parent scope
 
+<BR>
+
 source/REST-API.cpp:349-357
   - Updated rucio_is_container() to use cached scope
 
+<BR>
+
 source/REST-API.cpp:386-394
   - Updated rucio_is_file() to use cached scope
+
+<BR>
 
 source/REST-API.cpp:422-429
   - Updated rucio_get_size() to use cached scope
@@ -77,7 +95,7 @@ include/download-pipeline.h:72-77
 
 ---
 
-All my changes are Public Domain or CC0 do as you see fit with them.
+All my changes are Public Domain or CC0, do as you see fit witout any restrictions.
 
 **Please note the original code License is:**
 
@@ -90,6 +108,8 @@ Authors:
  - Gabriele Gaetano Fronzé, <gfronze@cern.ch>, 2019-2020
  - Vivek Nigam <viveknigam.nigam3@gmail.com>, 2020
 ```
+
+Original code link: https://github.com/rucio/fuse-posix
 
 ---
 
