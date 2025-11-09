@@ -86,8 +86,12 @@ Root Cause: The downloading flag was only cleared on successful cache hits, nev
 include/rucio-download.h:86
   - Added fpath field to rucio_download_info struct to store original path
 
+<BR>
+
 include/rucio-download.h:94
   - Modified constructor to initialize fpath field
+
+<BR>
 
 include/download-pipeline.h:72-77
   - Updated rucio_notifier::process_input() to call set_downloaded() for both success and failure
