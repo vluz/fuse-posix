@@ -71,6 +71,8 @@ struct rucio_notifier : public ELWD_Ending_Stage_I<rucio_download_info, DummyT>{
 
     DummyT* process_input(rucio_download_info* input) final{
       fastlog((input->fdownloaded)?INFO:ERROR, "%s", input->print().data());
+      // Clear the downloading flag whether download succeeded or failed
+      set_downloaded(input->fpath);
       //TODO: notify to the GUI the download status...
       return nullptr;
     }

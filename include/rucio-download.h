@@ -83,6 +83,7 @@ struct rucio_download_info{
     std::string fserver_name;
     std::string* fserver_config;
     std::string fdid;
+    std::string fpath;
     std::string::size_type fpos;
     int freturn_code = 0;
     unsigned int fattempt = 0;
@@ -90,6 +91,7 @@ struct rucio_download_info{
 
     explicit rucio_download_info(std::string did, const std::string& path) :
       fdid(std::move(did)),
+      fpath(path),
       fserver_name(extract_server_name(path)){
       fpos = fdid.find_first_of(':');
       fserver_config = get_server_config(fserver_name);
