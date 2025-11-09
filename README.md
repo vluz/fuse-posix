@@ -24,6 +24,8 @@ source/REST-API.cpp:228-245
   - Added auto-detection of JSON object vs Python list format
   - Calls appropriate parser based on format
 
+<BR>
+
 ## Problem 2: Incorrect DID Construction for Nested Files
 
 ### Original Issue: Files inside containers were assigned the wrong scope, causing download failures
@@ -74,6 +76,8 @@ source/REST-API.cpp:386-394
 
 source/REST-API.cpp:422-429
   - Updated rucio_get_size() to use cached scope
+
+<BR>
 
 ## Problem 3: Downloading Flag Not Cleared on Failure
 
