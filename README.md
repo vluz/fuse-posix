@@ -1,4 +1,4 @@
-# Summary of All Changes Made to Fix the FUSE-Rucio Driver
+# Summary of All Changes Made to Fix the FUSE-Rucio Driver to work with current LTS version
 
 ## Problem 1: Broken Scope Listing
 
