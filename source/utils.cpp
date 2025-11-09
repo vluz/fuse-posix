@@ -289,22 +289,66 @@ void structurize_container_did(const std::string& did_str, std::vector<rucio_did
 
 void parse_scope_json(const std::string& json_str, std::vector<std::string>& target){
   // Parse JSON objects like [{"scope": "test", ...}, {"scope": "alice", ...}]
-  std::vector<std::string> json_objects;
-  json_objects.reserve(std::count(json_str.begin(), json_str.end(), '{'));
+  // or newline-delimited JSON: {"scope": "test"}\n{"scope": "alice"}
+  // This handles both formats:
+  // - {"scope": "test"} (with quotes around scope value)
+  // - {scope: test} (without quotes, Rucio sometimes returns this)
 
-  std::stringstream stream(json_str);
-  std::string buffer;
-  while(getline(stream, buffer, '\n')){
-    coherentize_dids(buffer);
-    if(not buffer.empty()) {
-      json_objects.emplace_back(std::move(buffer));
+  std::string line = json_str;
+  size_t pos = 0;
+
+  // Look for "scope" key in the JSON
+  // We need to be careful to only match the "scope" key, not "scope" in a value
+  while ((pos = line.find("scope", pos)) != std::string::npos) {
+    // Check if this is actually a key by looking for : after it
+    // Skip past "scope" word
+    size_t after_scope = pos + 5; // length of "scope"
+
+    // Skip any whitespace or quotes
+    while (after_scope < line.size() &&
+           (line[after_scope] == ' ' || line[after_scope] == '"' || line[after_scope] == '\'')) {
+      after_scope++;
     }
-  }
 
-  for (auto &sjson : json_objects) {
-    auto mapped = map_did(sjson);
-    if (!mapped["scope"].empty()) {
-      target.emplace_back(mapped["scope"]);
+    // Check if we have a colon (meaning this is a key)
+    if (after_scope < line.size() && line[after_scope] == ':') {
+      size_t colon_pos = after_scope;
+
+      // Skip whitespace and quotes after colon to find value
+      size_t value_start = colon_pos + 1;
+      while (value_start < line.size() &&
+             (line[value_start] == ' ' || line[value_start] == '"' || line[value_start] == '\'')) {
+        value_start++;
+      }
+
+      // Find the end of the value (comma, closing brace, quote, or newline)
+      size_t value_end = value_start;
+      while (value_end < line.size() &&
+             line[value_end] != ',' &&
+             line[value_end] != '}' &&
+             line[value_end] != '"' &&
+             line[value_end] != '\'' &&
+             line[value_end] != '\n' &&
+             line[value_end] != '\r') {
+        value_end++;
+      }
+
+      // Extract the scope name
+      std::string scope_name = line.substr(value_start, value_end - value_start);
+
+      // Remove any trailing whitespace
+      while (!scope_name.empty() && (scope_name.back() == ' ' || scope_name.back() == '\t')) {
+        scope_name.pop_back();
+      }
+
+      if (!scope_name.empty()) {
+        target.emplace_back(scope_name);
+      }
+
+      pos = value_end;
+    } else {
+      // Not a key, keep searching
+      pos++;
     }
   }
 }

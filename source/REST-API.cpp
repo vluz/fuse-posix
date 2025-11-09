@@ -225,15 +225,23 @@ std::vector<std::string> rucio_list_scopes(const std::string& short_server_name)
 
     std::vector<std::string> scopes;
 
-    for (auto &line : curl_res.payload) {
-      // Check if the response contains JSON objects (new API format)
-      if (line.find("\"scope\":") != std::string::npos || line.find("scope:") != std::string::npos) {
-        // Parse JSON objects to extract scope values
-        parse_scope_json(line, scopes);
-      } else {
-        // Fall back to old Python list format
-        tokenize_python_list(line, scopes);
+    // Merge all payload lines into one string for parsing
+    std::string full_response;
+    for (const auto &line : curl_res.payload) {
+      full_response += line;
+      if (!line.empty() && line.back() != '\n') {
+        full_response += '\n';
       }
+    }
+
+    // Check response format and parse accordingly
+    if (full_response.find("{") != std::string::npos &&
+        (full_response.find("\"scope\"") != std::string::npos || full_response.find("scope:") != std::string::npos)) {
+      // New API format: JSON objects with scope field
+      parse_scope_json(full_response, scopes);
+    } else if (full_response.find("[") != std::string::npos) {
+      // Old API format: Python-style list ["scope1", "scope2"]
+      tokenize_python_list(full_response, scopes);
     }
 
     scopes_cache[short_server_name] = std::move(scopes);
