@@ -1,3 +1,100 @@
+# Summary of All Changes Made to Fix the FUSE-Rucio Driver
+
+## Problem 1: Broken Scope Listing
+
+### Original Issue: Scopes were displayed as broken fragments like {account:alice and scope:test}
+ 
+Root Cause: The Rucio API's /scopes/ endpoint changed from returning a Python list format to JSON objects with metadata.
+
+### Files Modified:
+
+include/utils.h:164-167
+- Added parse_scope_json() function declaration
+
+source/utils.cpp:290-354
+- Implemented parse_scope_json() to parse JSON objects and extract scope values
+- Handles both {"scope": "value"} and {scope: value} formats
+
+source/REST-API.cpp:228-245
+- Modified rucio_list_scopes() to merge all response lines
+- Added auto-detection of JSON object vs Python list format
+- Calls appropriate parser based on format
+
+## Problem 2: Incorrect DID Construction for Nested Files
+
+### Original Issue: Files inside containers were assigned the wrong scope, causing download failures
+ 
+Root Cause: The code assumed all files in a path use the top-level scope from the path, but Rucio returns each DID with its actual scope.
+
+### Files Modified:
+
+include/utils.h:177-182
+- Added did_scope_cache static map
+- Added cache_did_scope() function to store scope mappings
+- Added get_cached_scope() function to retrieve cached scopes
+
+source/utils.cpp:368-379
+- Implemented cache_did_scope() and get_cached_scope() functions
+
+source/utils.cpp:175-189
+- Modified get_did() to check cache for actual scope first
+- Falls back to path-based scope extraction if not cached
+
+source/REST-API.cpp:287-292
+- Updated rucio_list_dids() to cache actual DID scopes
+- Fixed cache keys to use did.scope instead of parent scope
+
+source/REST-API.cpp:330-338
+- Updated rucio_list_container_dids() to cache actual DID scopes
+- Fixed cache keys to use did.scope instead of parent scope
+
+source/REST-API.cpp:349-357
+- Updated rucio_is_container() to use cached scope
+
+source/REST-API.cpp:386-394
+- Updated rucio_is_file() to use cached scope
+
+source/REST-API.cpp:422-429
+- Updated rucio_get_size() to use cached scope
+
+## Problem 3: Downloading Flag Not Cleared on Failure
+
+### Original Issue: Failed downloads left paths marked as "downloading" forever, causing "Operation now in progress" errors
+ 
+Root Cause: The downloading flag was only cleared on successful cache hits, never on download failures.
+
+### Files Modified:
+
+include/rucio-download.h:86
+Added fpath field to rucio_download_info struct to store original path
+
+include/rucio-download.h:94
+Modified constructor to initialize fpath field
+
+include/download-pipeline.h:72-77
+Updated rucio_notifier::process_input() to call set_downloaded() for both success and failure
+Clears downloading flag after any download completion
+
+---
+
+All my changes are Public Domain or CC0.
+
+**Please note the original code License is:**
+
+```
+Copyright European Organization for Nuclear Research (CERN)
+Licensed under the Apache License, Version 2.0 (the "License");
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+Authors:
+ - Gabriele Gaetano Fronzé, <gfronze@cern.ch>, 2019-2020
+ - Vivek Nigam <viveknigam.nigam3@gmail.com>, 2020
+```
+
+---
+
+Original README.md:
+
 # Rucio `FUSE-posix` interface
 
 This repository carries the best attempt at making the Rucio namespace `posix`-mountable.
