@@ -287,6 +287,28 @@ void structurize_container_did(const std::string& did_str, std::vector<rucio_did
   }
 }
 
+void parse_scope_json(const std::string& json_str, std::vector<std::string>& target){
+  // Parse JSON objects like [{"scope": "test", ...}, {"scope": "alice", ...}]
+  std::vector<std::string> json_objects;
+  json_objects.reserve(std::count(json_str.begin(), json_str.end(), '{'));
+
+  std::stringstream stream(json_str);
+  std::string buffer;
+  while(getline(stream, buffer, '\n')){
+    coherentize_dids(buffer);
+    if(not buffer.empty()) {
+      json_objects.emplace_back(std::move(buffer));
+    }
+  }
+
+  for (auto &sjson : json_objects) {
+    auto mapped = map_did(sjson);
+    if (!mapped["scope"].empty()) {
+      target.emplace_back(mapped["scope"]);
+    }
+  }
+}
+
 void set_downloading(const std::string& path){
   downloading_status_cache.emplace(path);
 }
