@@ -1,3 +1,7 @@
+# Disclaimer:
+
+**This update was done to fit our purposes, it may not fit yours**
+
 # Summary of All Changes Made to Fix the FUSE-Rucio Driver to Work With Current LTS Version
 
 ## Problem 1: Broken Scope Listing
@@ -119,7 +123,9 @@ Authors:
 
 Original code link: https://github.com/rucio/fuse-posix
 
-TODO: Add instructions on how configure and use properly once I figure them out.
+---
+
+TODO: Add detailed instructions
 
 ---
 
